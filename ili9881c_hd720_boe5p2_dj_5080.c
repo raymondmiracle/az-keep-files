@@ -21,6 +21,21 @@
 #include <linux/wakelock.h>
 #include <mach/gpio_const.h>
 
+#define CONFIG_MTK_LEGACY
+#ifdef BUILD_LK
+#include <platform/upmu_common.h>
+#include <platform/mt_gpio.h>
+#include <platform/mt_i2c.h>
+#include <platform/mt_pmic.h>
+#include <string.h>
+#elif defined(BUILD_UBOOT)
+#include <asm/arch/mt_gpio.h>
+#endif
+/*#include <mach/mt_pm_ldo.h>*/
+
+int mt_set_gpio_out(unsigned long pin, unsigned long output);
+int mt_get_gpio_out(unsigned long pin);
+
 static unsigned int lcm_rst_pin;
 static unsigned int lcm_gpio_enn;
 static unsigned int lcm_gpio_enp;
@@ -54,7 +69,7 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 #define read_reg(cmd) lcm_util.dsi_dcs_read_lcm_reg(cmd)
 #define read_reg_v2(cmd, buffer, buffer_size) lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
-static struct LCM_setting_table
+struct LCM_setting_table
 {
     unsigned cmd;
     unsigned char count;
@@ -396,10 +411,10 @@ static void lcm_suspend(void)
     gpio_set_value(lcm_gpio_enp, 0);
     MDELAY(2);
     gpio_set_value(lcm_gpio_enn, 0);
-
+	
     mt_set_gpio_out(0x4E, 0);
     mt_set_gpio_out(0x50, 0);
-
+	
     printk("lcm_suspend end---\n");
 }
 
